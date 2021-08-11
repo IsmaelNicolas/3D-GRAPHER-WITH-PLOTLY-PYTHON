@@ -6,24 +6,18 @@ import dash_core_components as dcc
 from dash_html_components.Hr import Hr
 import plotly.express as px
 from dash.dependencies import Input, Output, State
-import pandas as pd
+import sympy as sp
 import numpy as np
 import plotly.graph_objects as go
-
-MATHJAX_CDN = '''
-https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/
-MathJax.js?config=TeX-MML-AM_CHTML'''
-
-external_scripts = [
-                    {'type': 'text/javascript',
-                     'id': 'MathJax-script',
-                     'src': MATHJAX_CDN,
-                     },
-                    ]
+import packages.utilities as ut
+import plotly.figure_factory as ff
+import math
+import  matplotlib.pyplot  as  plt 
 
 
-x = np.linspace(-1,1,300)
-y = np.linspace(-1,1,300)
+
+x = np.linspace(-1,1,30)
+y = np.linspace(-1,1,30)
 
 X , Y = np.meshgrid(x,y)
 
@@ -42,7 +36,30 @@ contour = go.Figure(data=
     )
 )
 
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LITERA],suppress_callback_exceptions=True,external_scripts=external_scripts)
+u = np.arange(  -2*np.pi , 2*np.pi,0.01)
+v = np.arange(  -2*np.pi , 2*np.pi,0.01)
+
+u,v = np.meshgrid(u,v)
+
+XP = None
+YP = None
+ZP = None
+
+pfig = go.Figure(data= [go.Surface(z=ZP,x=XP,y=YP)])
+pfig.update_layout(
+    margin=dict(l=1, r=4, t=10, b=10),
+)
+
+pcontour = go.Figure(data=
+    go.Contour(z=ZP,y=YP,x=XP,
+        contours_coloring='lines',
+        line_width=2,
+    )
+)
+
+
+app = dash.Dash(__name__ , suppress_callback_exceptions=True,external_stylesheets=[dbc.themes.LITERA])
+app.title="Graficador de Funciones"
 
 
 # styling the sidebar
@@ -98,65 +115,10 @@ app.layout = html.Div([
 )
 def render_page_content(pathname):
     if pathname == "/":
-        return [
-                html.H1('Ecuacion Z = F(x,y)',
-                        style={'textAlign':'center'},id="out"),
-                dbc.Input(id="funtion",placeholder="Ingresa la ecuación aquí", type="text",bs_size="lg",value=""),
-
-                dbc.Row([
-                    dbc.Col(
-                        dbc.Label("Limites del eje X: ", html_for="slider",style={'padding-top':20},),
-                        width=1.25,
-                    ),
-                    dbc.Col(
-                        html.Div(children=[
-                            dcc.RangeSlider(id="xlim", min=-10, max=10, step=0.1,value=[-5,5],
-                                marks={x: str(x) for x in [-10, -5, 0, 5,10]},
-                                tooltip={'placement':'bottom'}
-                                ),
-                        ],style={"margin":20}),
-                        width=4,
-                    ),
-                    dbc.Col(
-                        dbc.Label("Limites del eje Y: ", html_for="slider",style={'padding-top':20},),
-                        width=1.25,
-                    ),
-                    dbc.Col(
-                        html.Div(children=[
-                            dcc.RangeSlider(id="ylim", min=-10, max=10, step=0.1,value=[-5,5],
-                                marks={x: str(x) for x in [-10, -5, 0, 5,10]},
-                                tooltip={'placement':'bottom'}
-                                ),
-                        ],style={"margin":20,}),
-                        width=4,align="center"
-                    )
-                    
-                ],justify="center"),
-
-
-                html.Div([
-                    dcc.Graph(id="graph",figure=fig,style={"height":"100%","width":"100%",'margin':50})
-                    ],className="grafico"),
-
-                html.Hr(),
-
-                html.H2("Curva de nivel"),
-
-                html.Div(children=[
-                    dcc.Graph(id="contour",figure=contour)        
-                ])
-
-                ]
-
-
+        return tab_1()
 
     elif pathname == "/page-1":
-        return [
-                html.H1('Ecuacion Parametrica',
-                        style={'textAlign':'center'}),
-                dcc.Graph(id='bargraph',
-                         figure=fig)
-                ]
+        return tab_2()
     elif pathname == "/page-2":
         return [
                 html.H1('Sobre la Aplicacion',
@@ -173,42 +135,233 @@ def render_page_content(pathname):
         ]
     )
 
+def tab_2():
+    return [ 
+        html.H1('Ecuacion Parametrica', style={'textAlign':'center'}), 
+
+        dbc.InputGroup(
+            [
+                dbc.InputGroupAddon("X(u,v)",addon_type="prepend"),
+
+                html.Div(children=[dbc.Input(placeholder="radio",type="number")]),
+
+                dbc.Input(placeholder="Ingresa tu ecuacion aqui", id="FX"),
+            ],className="mb-3",
+        ),
+
+        dbc.InputGroup(
+            [
+                dbc.InputGroupAddon("Y(u,v)", addon_type="prepend"),
+
+                html.Div(children=[dbc.Input(placeholder="radio",type="number")]),
+
+                dbc.Input(placeholder="Ingresa tu ecuacion aqui",id="FY"),
+            ],className="mb-3",
+        ),
+
+        dbc.InputGroup(
+            [
+                dbc.InputGroupAddon("Z(u,v)", addon_type="prepend"),
+
+                html.Div(children=[dbc.Input(placeholder="radio",type="number")]),
+
+                dbc.Input(placeholder="Ingresa tu ecuacion aqui", id="FZ"),
+            ],className="mb-3",
+            
+        ),
+
+
+        dbc.Row([ 
+
+            dbc.Col( dbc.Label("   Limites de U: ", html_for="slider",style={'padding-top':20},), width=1.25, ), 
+            
+            dbc.Col( html.Div(children=[ 
+                            dcc.RangeSlider(id="U_limit", min= -2*math.pi , max= 2*math.pi , step=0.01,value=[-2*math.pi,2*math.pi], 
+                             tooltip={'placement':'bottom'},
+                             marks={ 
+                                    -2*math.pi:"-2𝝅", 
+                                    -math.pi:"-𝝅", 
+                                    0:"0", 
+                                    math.pi:"𝝅", 
+                                    2*math.pi:"2𝝅", 
+                                }
+                            ), 
+                        ],style={"margin":20}), width=5, ), 
+            
+            dbc.Col( dbc.Label("Limites de V: ", html_for="slider",style={'padding-top':20},), width=1.25, ), 
+            
+            dbc.Col( html.Div(children=[ 
+                            dcc.RangeSlider(id="V_limit", min= -2*math.pi , max= 2*math.pi, step=0.01,value=[0,math.pi],
+                                tooltip={'placement':'bottom'},
+                                marks={ 
+                                    -2*math.pi:"-2𝝅", 
+                                    -math.pi:"-𝝅", 
+                                    0:"0", 
+                                    math.pi:"𝝅", 
+                                    2*math.pi:"2𝝅", 
+                                } 
+                            ),
+                        ],style={"margin":20,}), width=5,align="center" )  ],justify="center"), 
+            
+            html.Div([ 
+                dcc.Graph(id="pgraph",
+                    figure=pfig,
+                    style={"height":"100%","width":"100%",'margin':50}) 
+            ],className="grafico"),  
+            
+            html.Hr(),  
+
+            dbc.Row([
+
+                dbc.Col(html.Div(children=[ 
+                    dcc.Graph(id="pcontour",figure=pcontour) ])),
+            
+                dbc.Col(html.Div(children=[
+                dcc.Graph(id ="quiver", figure=contour) ]))
+
+            ]),
+
+    ]
+
+def tab_1():
+    return [ 
+        
+        html.H1('Ecuacion Z = F(x,y)', style={'textAlign':'center'},id="out"), 
+        
+        dbc.Input(id="funtion",placeholder="Ingresa la ecuación aquí", type="text",bs_size="lg",value=""),  
+        
+        dbc.Row([ 
+
+            dbc.Col( dbc.Label("Limites del eje X: ", html_for="slider",style={'padding-top':20},), width=1.25, ), 
+            
+            dbc.Col( html.Div(children=[ 
+                            dcc.RangeSlider(id="xlim", min=-10, max=10, step=0.1,value=[-5,5], 
+                            marks={x: str(x) for x in [-10, -5, 0, 5,10]}, tooltip={'placement':'bottom'} ), 
+                        ],style={"margin":20}), width=4, ), 
+            
+            dbc.Col( dbc.Label("Limites del eje Y: ", html_for="slider",style={'padding-top':20},), width=1.25, ), 
+            
+            dbc.Col( html.Div(children=[ 
+                            dcc.RangeSlider(id="ylim", min=-10, max=10, step=0.1,value=[-5,5],
+                                 marks={x: str(x) for x in [-10, -5, 0, 5,10]}, tooltip={'placement':'bottom'} ), 
+                            ],style={"margin":20,}), width=4,align="center" )  ],justify="center"),   
+        
+        html.Div([ 
+            dcc.Graph(id="graph",figure=fig,style={"height":"100%","width":"100%",'margin':50}) ]
+            ,className="grafico"),  
+        
+        html.Hr(),  
+        
+        html.H2("Curva de nivel"),  
+        
+        dbc.Row([
+
+            dbc.Col(html.Div(children=[ 
+                    dcc.Graph(id="contour",figure=contour) ])),
+            
+            dbc.Col(html.Div(children=[
+                dcc.Graph(id ="quiver", figure=contour) ]))
+
+        ]),
+
+        #html.Div(children=[ 
+         #   dcc.Graph(id="contour",figure=contour) ])  
+        
+        ]
+
+"""Grafica y actualiza la funcion F(X,Y)"""
 @app.callback(
     [Output("graph", "figure"),Output("contour", "figure")], 
-    [Input('xlim', 'value'),Input('ylim', 'value'),Input("funtion","value")],  
+    [Input('xlim', 'value'),
+    Input('ylim', 'value'),
+    Input("funtion","value")],  
     [State("graph", "figure")])
-def x_limit(xlim, ylim,funtion,figure):
+def funtion(xlim, ylim,funtion,figure):
     
         x = np.linspace(xlim[0],xlim[1],300)
         y = np.linspace(ylim[0],ylim[1],300)
 
         X , Y = np.meshgrid(x,y)
 
-        Z = eval(funtion)
+        Z = eval( ut.reemplazo(funtion) )
 
         fig = go.Figure(data= [go.Surface(z=Z,x=X,y=Y)])
 
         fig.update_layout(
-            margin=dict(l=1, r=4, t=10, b=10)
+            margin=dict(l=1, r=4, t=10, b=10),
+            title={'text':"F(x,y): {}".format(funtion),'y':0.95,'x':0.5,'xanchor': 'center','yanchor': 'top'}
         ) 
 
         contour = go.Figure(data=
             go.Contour(z=Z,
             contours_coloring='lines',
             line_width=2,
-        )
-)
+            )
+        )   
+
+        #try:
+        #    fig.write_image("plot.png")
+        #    contour.write_image("contour.png")
+        #except:
+        #    fig.write_image("plot.png")
+        #    contour.write_image("contour.png")
+
 
         return [fig,contour]
 
+"""Pone de titulo la funcion que se grafica"""
 @app.callback(
     Output("out", "children"), 
     [Input("funtion","value")])
-def x_limit(input_value):
+def Funtion(input_value):
     return html.P('''F(x,y) = {}'''.format(input_value)),
+
+"""Grafica y actualiza la funcion parametrica"""
+@app.callback(
+    Output("pgraph", "figure"), 
+    [ #Inputs
+    Input('U_limit', 'value'),
+    Input('V_limit', 'value'),
+    Input("FX","value"),
+    Input("FY","value"),
+    Input("FZ","value"),    
+    ],  
+    [State("pgraph", "figure")])
+def parametric(u_lim,v_lim ,fx,fy,fz,figure):
+
+    u = np.arange(  u_lim[0] , u_lim[1] ,0.01)
+    v = np.arange(  v_lim[0] , v_lim[1] ,0.01)
+
+    u,v = np.meshgrid(u,v)
+
+    XP = eval( ut.reemplazo(fx) )
+    YP = eval( ut.reemplazo(fy) )
+    ZP = eval( ut.reemplazo(fz) )
+
+    
+    pfig = go.Figure(data= [go.Surface(z=ZP,x=XP,y=YP)])
+
+    if np.amax(XP) > np.amax(YP):
+        print("X>Y")
+        pfig.update_layout(
+            margin=dict(l=1, r=4, t=10, b=10),
+            yaxis_range=[-15, 15],
+            xaxis_range=[-15, 15]
+        )
+    else:
+        print("Y>X")
+        pfig.update_layout(
+            margin=dict(l=1, r=4, t=10, b=10),
+            xaxis_range=[-10, 10],
+            yaxis_range=[-10, 10],
+            
+        )
+
+
+    return pfig
 
 
 if __name__=='__main__':
-    app.run_server(debug=True, port=3000)
+    app.run_server(debug=True, port=5500,use_reloader=True)
 
     
