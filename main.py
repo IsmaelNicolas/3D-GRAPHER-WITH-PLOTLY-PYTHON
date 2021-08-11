@@ -3,6 +3,7 @@ import dash_bootstrap_components as dbc
 from dash_bootstrap_components._components.Row import Row
 import dash_html_components as html
 import dash_core_components as dcc
+from dash_html_components.Div import Div
 from dash_html_components.Hr import Hr
 import plotly.express as px
 from dash.dependencies import Input, Output, State
@@ -120,12 +121,7 @@ def render_page_content(pathname):
     elif pathname == "/page-1":
         return tab_2()
     elif pathname == "/page-2":
-        return [
-                html.H1('Sobre la Aplicacion',
-                        style={'textAlign':'center'}),
-                dcc.Graph(id='bargraph',
-                         figure=fig)
-                ]
+        return tab_3()
     # If the user tries to reach a different page, return a 404 message
     return dbc.Jumbotron(
         [
@@ -134,6 +130,18 @@ def render_page_content(pathname):
             html.P(f"La ruta {pathname} no fue reconocida..."),
         ]
     )
+
+def tab_3():
+    return [ 
+        html.H1('Sobre la Aplicacion', style={'textAlign':'center'}), 
+        html.Div(children=[
+            html.Img(src="/assets/espe.png",height="200px",width="200px"),
+        ],className="logo"),
+        html.H3("UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE",style={'textAlign':'center'}),
+        html.H4("CALCULO VECTORIAL",style={'textAlign':'center'}),
+
+        
+    ]
 
 def tab_2():
     return [ 
