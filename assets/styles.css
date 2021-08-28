@@ -8,10 +8,14 @@
     border-radius: 20px;
 }
 
-
 .logo{
     position: absolute;
-    top: 70px;
+    top: 40px;
     left: 300px;
+}
 
+.logo1{
+    position: absolute;
+    top: 40px;
+    right: 40px;
 }
