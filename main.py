@@ -549,7 +549,6 @@ def parametric(u_lim,v_lim ,fx,fy,fz,figure):
                         width=1000,height=600
                     )
 
-    
     if np.amax(XP) > np.amax(YP):
         
         pfig.update_layout(

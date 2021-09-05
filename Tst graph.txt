@@ -1,0 +1,37 @@
+-----------------PARAMETRICAS---------------
+
+1)Lagrima
+
+(1-cos(v))*sin(v)*cos(u)
+(1-cos(v))*sin(v)*sin(u)
+cos(v)
+--------------------------------------------
+2) Movius band
+0 < u < 2pi
+-1 < v < 1
+(1 + 0.5*v*cos(u/2.))*cos(u) 
+(1 + 0.5*v*cos(u/2.))*sin(u)
+0.5*v*sin(u/2.) 
+--------------------------------------------
+3) Caramelo
+0 < u < 2*pi
+0 < v < 2*pi
+u
+cos(u)*sin(v)
+cos(u)*cos(v)
+--------------------------------------------
+EXTRA: Torus (scale[x:1,y:1,z:0.3])
+0 < u < 2pi
+0 < v < 2pi
+(3 + (cos(v)))*cos(u)
+(3 + (cos(v)))*sin(u)
+sin(v)
+-----------------Z = F(X,Y) ---------------
+
+1)sin(sqrt(x^(2)+y^(2)))
+
+2)Hiperboloide de dos hojas
+sqrt(25+x^2+y^2)  
+sqrt(25+x^2+y^2)
+
+ 
